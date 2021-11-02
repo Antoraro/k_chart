@@ -321,8 +321,7 @@ class _KChartWidgetState extends State<KChartWidget>
     Color color = widget.chartColors.infoWindowNormalColor;
     if (info.startsWith("+"))
       color = widget.chartColors.infoWindowUpColor;
-    else if (info.startsWith("-"))
-      color = widget.chartColors.infoWindowDnColor;
+    else if (info.startsWith("-")) color = widget.chartColors.infoWindowDnColor;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,

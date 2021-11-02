@@ -263,7 +263,8 @@ class ChartPainter extends BaseChartPainter {
       tp.paint(canvas, Offset(x + w1 + w2, y - textHeight / 2));
     }
 
-    TextPainter dateTp = getTextPainter(getDate(point.time), chartColors.crossTextColor);
+    TextPainter dateTp =
+        getTextPainter(getDate(point.time), chartColors.crossTextColor);
     textWidth = dateTp.width;
     r = textHeight / 2;
     x = translateXtoX(getX(index));
@@ -311,11 +312,13 @@ class ChartPainter extends BaseChartPainter {
     if (x < mWidth / 2) {
       //画右边
       TextPainter tp = getTextPainter(
-          "── " + mMainLowMinValue.toStringAsFixed(fixedLength), chartColors.minColor);
+          "── " + mMainLowMinValue.toStringAsFixed(fixedLength),
+          chartColors.minColor);
       tp.paint(canvas, Offset(x, y - tp.height / 2));
     } else {
       TextPainter tp = getTextPainter(
-          mMainLowMinValue.toStringAsFixed(fixedLength) + " ──", chartColors.minColor);
+          mMainLowMinValue.toStringAsFixed(fixedLength) + " ──",
+          chartColors.minColor);
       tp.paint(canvas, Offset(x - tp.width, y - tp.height / 2));
     }
     x = translateXtoX(getX(mMainMaxIndex));
@@ -323,11 +326,13 @@ class ChartPainter extends BaseChartPainter {
     if (x < mWidth / 2) {
       //画右边
       TextPainter tp = getTextPainter(
-          "── " + mMainHighMaxValue.toStringAsFixed(fixedLength), chartColors.maxColor);
+          "── " + mMainHighMaxValue.toStringAsFixed(fixedLength),
+          chartColors.maxColor);
       tp.paint(canvas, Offset(x, y - tp.height / 2));
     } else {
       TextPainter tp = getTextPainter(
-          mMainHighMaxValue.toStringAsFixed(fixedLength) + " ──", chartColors.maxColor);
+          mMainHighMaxValue.toStringAsFixed(fixedLength) + " ──",
+          chartColors.maxColor);
       tp.paint(canvas, Offset(x - tp.width, y - tp.height / 2));
     }
   }
@@ -367,11 +372,11 @@ class ChartPainter extends BaseChartPainter {
     //再画背景和文本
     TextPainter tp = getTextPainter(
         value.toStringAsFixed(fixedLength), this.chartColors.nowPriceTextColor);
-    double left = 0;
+    double left = chartStyle.alignGridRight ? mWidth - tp.width : 0;
     double top = y - tp.height / 2;
     canvas.drawRect(Rect.fromLTRB(left, top, left + tp.width, top + tp.height),
         nowPricePaint);
-    tp.paint(canvas, Offset(0, top));
+    tp.paint(canvas, Offset(left, top));
   }
 
   ///画交叉线
