@@ -372,7 +372,7 @@ class ChartPainter extends BaseChartPainter {
     //再画背景和文本
     TextPainter tp = getTextPainter(
         value.toStringAsFixed(fixedLength), this.chartColors.nowPriceTextColor);
-    double left = chartStyle.alignGridRight ? mWidth - tp.width : 0;
+    double left = chartStyle.alignPriceRight ? mWidth - tp.width : 0;
     double top = y - tp.height / 2;
     canvas.drawRect(Rect.fromLTRB(left, top, left + tp.width, top + tp.height),
         nowPricePaint);

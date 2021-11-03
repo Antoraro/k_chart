@@ -66,7 +66,7 @@ class ChartColors {
 }
 
 class ChartStyle {
-  bool alignGridRight = false;
+  bool alignPriceRight = false;
 
   double topPadding = 30.0;
 

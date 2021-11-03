@@ -12,7 +12,6 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
 
   //绘制的内容区域
   late Rect _contentRect;
-  double _contentPadding = 5.0;
   List<int> maDayList;
   final ChartStyle chartStyle;
   final ChartColors chartColors;
@@ -33,7 +32,12 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       this.scaleX,
       [this.maDayList = const [5, 10, 20]])
       : super(
-            chartRect: mainRect,
+            chartRect: Rect.fromLTWH(
+              mainRect.left,
+              mainRect.top,
+              mainRect.width,
+              mainRect.height,
+            ),
             maxValue: maxValue,
             minValue: minValue,
             topPadding: topPadding,
@@ -47,10 +51,11 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       ..strokeWidth = mLineStrokeWidth
       ..color = this.chartColors.kLineColor;
     _contentRect = Rect.fromLTRB(
-        chartRect.left,
-        chartRect.top + _contentPadding,
-        chartRect.right,
-        chartRect.bottom - _contentPadding);
+      chartRect.left,
+      chartRect.top,
+      chartRect.right,
+      chartRect.bottom,
+    );
     if (maxValue == minValue) {
       maxValue *= 1.5;
       minValue /= 2;
@@ -238,7 +243,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
           TextPainter(text: span, textDirection: TextDirection.ltr);
       tp.layout();
       double offsetX =
-          chartStyle.alignGridRight ? chartRect.width - tp.width : 0;
+          chartStyle.alignPriceRight ? chartRect.width - tp.width : 0;
       if (i == 0) {
         tp.paint(canvas, Offset(offsetX, topPadding));
       } else {
@@ -257,7 +262,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
           Offset(chartRect.width, rowSpace * i + topPadding), gridPaint);
     }
     double columnSpace = chartRect.width / gridColumns;
-    for (int i = 0; i <= columnSpace; i++) {
+    for (int i = 0; i <= gridColumns; i++) {
       canvas.drawLine(Offset(columnSpace * i, topPadding / 3),
           Offset(columnSpace * i, chartRect.bottom), gridPaint);
     }
