@@ -14,7 +14,7 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
   final ChartColors chartColors;
 
   SecondaryRenderer(
-      Rect mainRect,
+      Rect chartRect,
       double maxValue,
       double minValue,
       double topPadding,
@@ -24,12 +24,7 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
       this.chartStyle,
       this.chartColors)
       : super(
-          chartRect: Rect.fromLTWH(
-            mainRect.left,
-            mainRect.top,
-            mainRect.width - priceSpacerWidth,
-            mainRect.height,
-          ),
+          chartRect: chartRect,
           maxValue: maxValue,
           minValue: minValue,
           topPadding: topPadding,
@@ -161,8 +156,9 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
         break;
     }
     TextPainter tp = TextPainter(
-        text: TextSpan(children: children ?? []),
-        textDirection: TextDirection.ltr);
+      text: TextSpan(children: children ?? []),
+      textDirection: TextDirection.ltr,
+    );
     tp.layout();
     tp.paint(canvas, Offset(x, chartRect.top - topPadding));
   }
@@ -179,34 +175,37 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
     minTp.layout();
 
     final shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+    double maxTpOffsetX = chartStyle.alignPriceRight
+        ? chartRect.width - maxTp.width + shift - chartStyle.priceLabelPadding
+        : chartStyle.priceLabelPadding;
+    double minTpOffsetX = chartStyle.alignPriceRight
+        ? chartRect.width - minTp.width + shift - chartStyle.priceLabelPadding
+        : chartStyle.priceLabelPadding;
 
-    maxTp.paint(
-      canvas,
-      Offset(
-        chartRect.width - maxTp.width + shift,
-        chartRect.top - topPadding,
-      ),
-    );
-    minTp.paint(
-      canvas,
-      Offset(
-        chartRect.width - minTp.width + shift,
-        chartRect.bottom - minTp.height,
-      ),
-    );
+    maxTp.paint(canvas, Offset(maxTpOffsetX, chartRect.top - topPadding));
+    minTp.paint(canvas, Offset(minTpOffsetX, chartRect.bottom - minTp.height));
   }
 
   @override
   void drawGrid(Canvas canvas, int gridRows, int gridColumns) {
-    canvas.drawLine(Offset(0, chartRect.top),
-        Offset(chartRect.width, chartRect.top), gridPaint);
-    canvas.drawLine(Offset(0, chartRect.bottom),
-        Offset(chartRect.width, chartRect.bottom), gridPaint);
+    canvas.drawLine(
+      Offset(chartRect.left, chartRect.top),
+      Offset(chartRect.right, chartRect.top),
+      gridPaint,
+    );
+    canvas.drawLine(
+      Offset(chartRect.left, chartRect.bottom),
+      Offset(chartRect.right, chartRect.bottom),
+      gridPaint,
+    );
     double columnSpace = chartRect.width / gridColumns;
-    for (int i = 0; i <= columnSpace; i++) {
-      //mSecondaryRect垂直线
-      canvas.drawLine(Offset(columnSpace * i, chartRect.top - topPadding),
-          Offset(columnSpace * i, chartRect.bottom), gridPaint);
+    double shiftX = chartStyle.alignPriceRight ? 0.0 : priceSpacerWidth;
+    for (int i = 0; i <= gridColumns; i++) {
+      canvas.drawLine(
+        Offset(columnSpace * i + shiftX, topPadding / 3),
+        Offset(columnSpace * i + shiftX, chartRect.bottom),
+        gridPaint,
+      );
     }
   }
 }

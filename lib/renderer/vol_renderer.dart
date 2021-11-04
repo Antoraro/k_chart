@@ -10,7 +10,7 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
   final ChartColors chartColors;
 
   VolRenderer(
-    Rect mainRect,
+    Rect chartRect,
     double maxValue,
     double minValue,
     double topPadding,
@@ -19,12 +19,7 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
     this.chartStyle,
     this.chartColors,
   ) : super(
-          chartRect: Rect.fromLTWH(
-            mainRect.left,
-            mainRect.top,
-            mainRect.width - priceSpacerWidth,
-            mainRect.height,
-          ),
+          chartRect: chartRect,
           maxValue: maxValue,
           minValue: minValue,
           topPadding: topPadding,
@@ -87,31 +82,36 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
 
   @override
   void drawRightText(canvas, textStyle, int gridRows) {
-    TextSpan span =
-        TextSpan(text: "${NumberUtil.format(maxValue)}", style: textStyle);
+    TextSpan span = TextSpan(
+      text: "${NumberUtil.format(maxValue)}",
+      style: textStyle,
+    );
     TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
     tp.layout();
 
-    final shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+    double shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+    double offsetX = chartStyle.alignPriceRight
+        ? chartRect.width - tp.width + shift - chartStyle.priceLabelPadding
+        : chartStyle.priceLabelPadding;
 
-    tp.paint(
-      canvas,
-      Offset(
-        chartRect.width - tp.width + shift,
-        chartRect.top - topPadding,
-      ),
-    );
+    tp.paint(canvas, Offset(offsetX, chartRect.top - topPadding));
   }
 
   @override
   void drawGrid(Canvas canvas, int gridRows, int gridColumns) {
-    canvas.drawLine(Offset(0, chartRect.bottom),
-        Offset(chartRect.width, chartRect.bottom), gridPaint);
+    canvas.drawLine(
+      Offset(chartRect.left, chartRect.bottom),
+      Offset(chartRect.right, chartRect.bottom),
+      gridPaint,
+    );
     double columnSpace = chartRect.width / gridColumns;
-    for (int i = 0; i <= columnSpace; i++) {
-      //vol垂直线
-      canvas.drawLine(Offset(columnSpace * i, chartRect.top - topPadding),
-          Offset(columnSpace * i, chartRect.bottom), gridPaint);
+    double shiftX = chartStyle.alignPriceRight ? 0.0 : priceSpacerWidth;
+    for (int i = 0; i <= gridColumns; i++) {
+      canvas.drawLine(
+        Offset(columnSpace * i + shiftX, topPadding / 3),
+        Offset(columnSpace * i + shiftX, chartRect.bottom),
+        gridPaint,
+      );
     }
   }
 }

@@ -114,10 +114,14 @@ abstract class BaseChartPainter extends CustomPainter {
     drawGrid(canvas);
     if (datas != null && datas!.isNotEmpty) {
       drawChart(canvas, size);
+      drawPriceSpacerBg(canvas, size);
       drawRightText(canvas);
       drawDate(canvas, size);
 
-      drawText(canvas, datas!.last, 5);
+      double textX = chartStyle.alignPriceRight
+          ? chartStyle.priceLabelPadding
+          : getPriceSpacerWidth() + chartStyle.priceLabelPadding;
+      drawText(canvas, datas!.last, textX);
       drawMaxAndMin(canvas);
       drawNowPrice(canvas);
 
@@ -133,6 +137,9 @@ abstract class BaseChartPainter extends CustomPainter {
 
   //画背景
   void drawBg(Canvas canvas, Size size);
+
+  // draw price spacer bg if needed
+  void drawPriceSpacerBg(Canvas canvas, Size size);
 
   //画网格
   void drawGrid(canvas);
@@ -382,6 +389,15 @@ abstract class BaseChartPainter extends CustomPainter {
       mPriceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
     }
     return mPriceSpacerWidth;
+  }
+
+  Rect getShiftedRect(Rect oldRect) {
+    return Rect.fromLTWH(
+      oldRect.left + (chartStyle.alignPriceRight ? 0.0 : mPriceSpacerWidth),
+      oldRect.top,
+      oldRect.width - mPriceSpacerWidth,
+      oldRect.height,
+    );
   }
 
   @override

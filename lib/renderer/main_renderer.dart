@@ -21,7 +21,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
   late Paint mLinePaint;
 
   MainRenderer(
-      Rect mainRect,
+      Rect chartRect,
       double maxValue,
       double minValue,
       double topPadding,
@@ -34,17 +34,13 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       this.scaleX,
       [this.maDayList = const [5, 10, 20]])
       : super(
-            chartRect: Rect.fromLTWH(
-              mainRect.left,
-              mainRect.top,
-              mainRect.width - priceSpacerWidth,
-              mainRect.height,
-            ),
-            maxValue: maxValue,
-            minValue: minValue,
-            topPadding: topPadding,
-            fixedLength: fixedLength,
-            gridColor: chartColors.gridColor) {
+          chartRect: chartRect,
+          maxValue: maxValue,
+          minValue: minValue,
+          topPadding: topPadding,
+          fixedLength: fixedLength,
+          gridColor: chartColors.gridColor,
+        ) {
     mCandleWidth = this.chartStyle.candleWidth;
     mCandleLineWidth = this.chartStyle.candleLineWidth;
     mLinePaint = Paint()
@@ -241,8 +237,10 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
     for (var i = 0; i <= gridRows; ++i) {
       double value = (gridRows - i) * rowSpace / scaleY + minValue;
       TextSpan span = TextSpan(text: "${format(value)}", style: textStyle);
-      TextPainter tp =
-          TextPainter(text: span, textDirection: TextDirection.ltr);
+      TextPainter tp = TextPainter(
+        text: span,
+        textDirection: TextDirection.ltr,
+      );
       tp.layout();
 
       double shiftX = chartStyle.enablePriceSpacer
@@ -250,8 +248,9 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
           : -tp.width;
       double shiftY = chartStyle.enablePriceSpacer ? tp.height / 2 : tp.height;
 
-      double offsetX =
-          chartStyle.alignPriceRight ? chartRect.width + shiftX : 0;
+      double offsetX = chartStyle.alignPriceRight
+          ? chartRect.right + shiftX
+          : chartStyle.priceLabelPadding;
 
       if (i == 0) {
         tp.paint(canvas, Offset(offsetX, topPadding - shiftY));
@@ -274,13 +273,20 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
 //    final int gridRows = 4, gridColumns = 4;
     double rowSpace = chartRect.height / gridRows;
     for (int i = 0; i <= gridRows; i++) {
-      canvas.drawLine(Offset(0, rowSpace * i + topPadding),
-          Offset(chartRect.width, rowSpace * i + topPadding), gridPaint);
+      canvas.drawLine(
+        Offset(chartRect.left, rowSpace * i + topPadding),
+        Offset(chartRect.right, rowSpace * i + topPadding),
+        gridPaint,
+      );
     }
     double columnSpace = chartRect.width / gridColumns;
+    double shiftX = chartStyle.alignPriceRight ? 0.0 : priceSpacerWidth;
     for (int i = 0; i <= gridColumns; i++) {
-      canvas.drawLine(Offset(columnSpace * i, topPadding / 3),
-          Offset(columnSpace * i, chartRect.bottom), gridPaint);
+      canvas.drawLine(
+        Offset(columnSpace * i + shiftX, topPadding / 3),
+        Offset(columnSpace * i + shiftX, chartRect.bottom),
+        gridPaint,
+      );
     }
   }
 

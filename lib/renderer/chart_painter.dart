@@ -87,7 +87,7 @@ class ChartPainter extends BaseChartPainter {
     double priceSpacerWidth = getPriceSpacerWidth();
 
     mMainRenderer = MainRenderer(
-      mMainRect,
+      getShiftedRect(mMainRect),
       mMainMaxValue,
       mMainMinValue,
       mTopPadding,
@@ -102,7 +102,7 @@ class ChartPainter extends BaseChartPainter {
     );
     if (mVolRect != null) {
       mVolRenderer = VolRenderer(
-        mVolRect!,
+        getShiftedRect(mVolRect!),
         mVolMaxValue,
         mVolMinValue,
         mChildPadding,
@@ -114,7 +114,7 @@ class ChartPainter extends BaseChartPainter {
     }
     if (mSecondaryRect != null) {
       mSecondaryRenderer = SecondaryRenderer(
-        mSecondaryRect!,
+        getShiftedRect(mSecondaryRect!),
         mSecondaryMaxValue,
         mSecondaryMinValue,
         mChildPadding,
@@ -135,28 +135,115 @@ class ChartPainter extends BaseChartPainter {
       end: Alignment.topCenter,
       colors: bgColor ?? chartColors.bgColor,
     );
-    Rect mainRect =
-        Rect.fromLTRB(0, 0, mMainRect.width, mMainRect.height + mTopPadding);
+    Rect mainRect = Rect.fromLTRB(
+      0,
+      0,
+      mMainRect.width,
+      mMainRect.height + mTopPadding,
+    );
     canvas.drawRect(
-        mainRect, mBgPaint..shader = mBgGradient.createShader(mainRect));
+      mainRect,
+      mBgPaint..shader = mBgGradient.createShader(mainRect),
+    );
 
     if (mVolRect != null) {
       Rect volRect = Rect.fromLTRB(
-          0, mVolRect!.top - mChildPadding, mVolRect!.width, mVolRect!.bottom);
+        0,
+        mVolRect!.top - mChildPadding,
+        mVolRect!.width,
+        mVolRect!.bottom,
+      );
       canvas.drawRect(
-          volRect, mBgPaint..shader = mBgGradient.createShader(volRect));
+        volRect,
+        mBgPaint..shader = mBgGradient.createShader(volRect),
+      );
     }
 
     if (mSecondaryRect != null) {
-      Rect secondaryRect = Rect.fromLTRB(0, mSecondaryRect!.top - mChildPadding,
-          mSecondaryRect!.width, mSecondaryRect!.bottom);
-      canvas.drawRect(secondaryRect,
-          mBgPaint..shader = mBgGradient.createShader(secondaryRect));
+      Rect secondaryRect = Rect.fromLTRB(
+        0,
+        mSecondaryRect!.top - mChildPadding,
+        mSecondaryRect!.width,
+        mSecondaryRect!.bottom,
+      );
+      canvas.drawRect(
+        secondaryRect,
+        mBgPaint..shader = mBgGradient.createShader(secondaryRect),
+      );
     }
-    Rect dateRect =
-        Rect.fromLTRB(0, size.height - mBottomPadding, size.width, size.height);
+    Rect dateRect = Rect.fromLTRB(
+      0,
+      size.height - mBottomPadding,
+      size.width,
+      size.height,
+    );
     canvas.drawRect(
-        dateRect, mBgPaint..shader = mBgGradient.createShader(dateRect));
+      dateRect,
+      mBgPaint..shader = mBgGradient.createShader(dateRect),
+    );
+  }
+
+  @override
+  void drawPriceSpacerBg(Canvas canvas, Size size) {
+    double spacerWidth = getPriceSpacerWidth();
+    if (spacerWidth == 0) return;
+
+    double offsetX =
+        chartStyle.alignPriceRight ? mMainRect.width - spacerWidth : 0.0;
+    double offsetY = chartStyle.alignPriceRight ? mMainRect.width : spacerWidth;
+
+    Paint mBgPaint = Paint();
+    Gradient mBgGradient = LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: bgColor ?? chartColors.bgColor,
+    );
+    Rect mainRect = Rect.fromLTRB(
+      offsetX,
+      0,
+      offsetY,
+      mMainRect.height + mTopPadding,
+    );
+    canvas.drawRect(
+      mainRect,
+      mBgPaint..shader = mBgGradient.createShader(mainRect),
+    );
+
+    if (mVolRect != null) {
+      Rect volRect = Rect.fromLTRB(
+        offsetX,
+        mVolRect!.top - mChildPadding,
+        offsetY,
+        mVolRect!.bottom,
+      );
+      canvas.drawRect(
+        volRect,
+        mBgPaint..shader = mBgGradient.createShader(volRect),
+      );
+    }
+
+    if (mSecondaryRect != null) {
+      Rect secondaryRect = Rect.fromLTRB(
+        offsetX,
+        mSecondaryRect!.top - mChildPadding,
+        offsetY,
+        mSecondaryRect!.bottom,
+      );
+      canvas.drawRect(
+        secondaryRect,
+        mBgPaint..shader = mBgGradient.createShader(secondaryRect),
+      );
+    }
+    Rect dateRect = Rect.fromLTRB(
+      offsetX,
+      size.height - mBottomPadding,
+      offsetY,
+      size.height,
+    );
+    canvas.drawRect(
+      dateRect,
+      mBgPaint..shader = mBgGradient.createShader(dateRect),
+    );
   }
 
   @override
@@ -395,19 +482,25 @@ class ChartPainter extends BaseChartPainter {
       value.toStringAsFixed(fixedLength),
       this.chartColors.nowPriceTextColor,
     );
+
     double left = chartStyle.alignPriceRight ? mWidth - tp.width : 0;
     double top = y - tp.height / 2;
-    double shift =
+
+    double rectShift =
         chartStyle.enablePriceSpacer ? chartStyle.priceLabelPadding * 2 : 0;
+    double tpShift =
+        chartStyle.alignPriceRight ? rectShift : -chartStyle.priceLabelPadding;
+
     canvas.drawRect(
-        Rect.fromLTRB(
-          left - shift,
-          top,
-          left + tp.width + shift,
-          top + tp.height,
-        ),
-        nowPricePaint);
-    tp.paint(canvas, Offset(left - shift / 2, top));
+      Rect.fromLTRB(
+        left - rectShift,
+        top,
+        left + tp.width + rectShift,
+        top + tp.height,
+      ),
+      nowPricePaint,
+    );
+    tp.paint(canvas, Offset(left - tpShift / 2, top));
   }
 
   ///画交叉线
