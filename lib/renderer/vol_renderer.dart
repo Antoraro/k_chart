@@ -89,10 +89,14 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
     TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
     tp.layout();
 
-    double shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+    double shift = chartStyle.enablePriceSpacer
+        ? priceSpacerWidth - chartStyle.priceLabelPadding
+        : 0.0;
     double offsetX = chartStyle.alignPriceRight
-        ? chartRect.width - tp.width + shift - chartStyle.priceLabelPadding
-        : chartStyle.priceLabelPadding;
+        ? chartRect.width - tp.width + shift
+        : (chartStyle.enablePriceSpacer
+            ? chartStyle.priceLabelPadding
+            : chartRect.width - tp.width);
 
     tp.paint(canvas, Offset(offsetX, chartRect.top - topPadding));
   }

@@ -174,13 +174,19 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
         textDirection: TextDirection.ltr);
     minTp.layout();
 
-    final shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+    final shift = chartStyle.enablePriceSpacer
+        ? priceSpacerWidth - chartStyle.priceLabelPadding
+        : 0.0;
     double maxTpOffsetX = chartStyle.alignPriceRight
-        ? chartRect.width - maxTp.width + shift - chartStyle.priceLabelPadding
-        : chartStyle.priceLabelPadding;
+        ? chartRect.width - maxTp.width + shift
+        : (chartStyle.enablePriceSpacer
+            ? chartStyle.priceLabelPadding
+            : chartRect.width - maxTp.width);
     double minTpOffsetX = chartStyle.alignPriceRight
-        ? chartRect.width - minTp.width + shift - chartStyle.priceLabelPadding
-        : chartStyle.priceLabelPadding;
+        ? chartRect.width - minTp.width + shift
+        : (chartStyle.enablePriceSpacer
+            ? chartStyle.priceLabelPadding
+            : chartRect.width - minTp.width);
 
     maxTp.paint(canvas, Offset(maxTpOffsetX, chartRect.top - topPadding));
     minTp.paint(canvas, Offset(minTpOffsetX, chartRect.bottom - minTp.height));

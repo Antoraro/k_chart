@@ -488,19 +488,24 @@ class ChartPainter extends BaseChartPainter {
 
     double rectShift =
         chartStyle.enablePriceSpacer ? chartStyle.priceLabelPadding * 2 : 0;
-    double tpShift =
-        chartStyle.alignPriceRight ? rectShift : -chartStyle.priceLabelPadding;
+    double tpShift = chartStyle.alignPriceRight
+        ? rectShift
+        : -chartStyle.priceLabelPadding * 2;
+
+    double rectX =
+        chartStyle.alignPriceRight ? left - rectShift : left - rectShift;
+    double tpX = chartStyle.enablePriceSpacer ? left - tpShift / 2 : left;
 
     canvas.drawRect(
       Rect.fromLTRB(
-        left - rectShift,
+        rectX,
         top,
         left + tp.width + rectShift,
         top + tp.height,
       ),
       nowPricePaint,
     );
-    tp.paint(canvas, Offset(left - tpShift / 2, top));
+    tp.paint(canvas, Offset(tpX, top));
   }
 
   ///画交叉线

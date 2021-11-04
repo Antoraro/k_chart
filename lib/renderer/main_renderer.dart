@@ -250,7 +250,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
 
       double offsetX = chartStyle.alignPriceRight
           ? chartRect.right + shiftX
-          : chartStyle.priceLabelPadding;
+          : (chartStyle.enablePriceSpacer ? chartStyle.priceLabelPadding : 0.0);
 
       if (i == 0) {
         tp.paint(canvas, Offset(offsetX, topPadding - shiftY));
