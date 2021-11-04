@@ -39,13 +39,14 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _volHidden = false;
   SecondaryState _secondaryState = SecondaryState.MACD;
   bool isLine = true;
+  bool isAlignPriceRight = false;
+  bool isEnablePriceSpacer = false;
   bool isChinese = true;
   bool _hideGrid = false;
   bool _showNowPrice = true;
   List<DepthEntity>? _bids, _asks;
   bool isChangeUI = false;
 
-  ChartStyle chartStyle = ChartStyle()..alignGridRight = true;
   ChartColors chartColors = ChartColors();
 
   @override
@@ -102,7 +103,9 @@ class _MyHomePageState extends State<MyHomePage> {
             width: double.infinity,
             child: KChartWidget(
               datas,
-              chartStyle,
+              ChartStyle()
+                ..alignPriceRight = isAlignPriceRight
+                ..enablePriceSpacer = isEnablePriceSpacer,
               chartColors,
               isLine: isLine,
               mainState: _mainState,
@@ -140,6 +143,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return Wrap(
       alignment: WrapAlignment.spaceEvenly,
       children: <Widget>[
+        button(
+          "Align Price ${isAlignPriceRight ? 'Left' : 'Right'}",
+          onPressed: () => isAlignPriceRight = !isAlignPriceRight,
+        ),
+        button(
+          "${isEnablePriceSpacer ? 'Disable' : 'Enable'} Price Spacer",
+          onPressed: () => isEnablePriceSpacer = !isEnablePriceSpacer,
+        ),
         button("Time Mode", onPressed: () => isLine = true),
         button("K Line Mode", onPressed: () => isLine = false),
         button("Line:MA", onPressed: () => _mainState = MainState.MA),

@@ -68,6 +68,10 @@ class ChartColors {
 class ChartStyle {
   bool alignPriceRight = false;
 
+  bool enablePriceSpacer = false;
+
+  double priceLabelPadding = 4.0;
+
   double topPadding = 30.0;
 
   double bottomPadding = 20.0;
@@ -96,7 +100,7 @@ class ChartStyle {
   double hCrossWidth = 0.5;
 
   //现在价格的线条长度
-  double nowPriceLineLength = 1;
+  double nowPriceLineThickness = 1;
 
   //现在价格的线条间隔
   double nowPriceLineSpan = 1;

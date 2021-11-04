@@ -24,8 +24,8 @@ class ChartPainter extends BaseChartPainter {
   List<Color>? bgColor;
   int fixedLength;
   List<int> maDayList;
-  final ChartColors chartColors;
   late Paint selectPointPaint, selectorBorderPaint, nowPricePaint;
+  final ChartColors chartColors;
   final ChartStyle chartStyle;
   final bool hideGrid;
   final bool showNowPrice;
@@ -49,16 +49,19 @@ class ChartPainter extends BaseChartPainter {
     this.fixedLength = 2,
     this.maDayList = const [5, 10, 20],
   })  : assert(bgColor == null || bgColor.length >= 2),
-        super(chartStyle,
-            datas: datas,
-            scaleX: scaleX,
-            scrollX: scrollX,
-            isLongPress: isLongPass,
-            selectX: selectX,
-            mainState: mainState,
-            volHidden: volHidden,
-            secondaryState: secondaryState,
-            isLine: isLine) {
+        super(
+          chartStyle,
+          chartColors,
+          datas: datas,
+          scaleX: scaleX,
+          scrollX: scrollX,
+          isLongPress: isLongPass,
+          selectX: selectX,
+          mainState: mainState,
+          volHidden: volHidden,
+          secondaryState: secondaryState,
+          isLine: isLine,
+        ) {
     selectPointPaint = Paint()
       ..isAntiAlias = true
       ..strokeWidth = 0.5
@@ -80,11 +83,15 @@ class ChartPainter extends BaseChartPainter {
       fixedLength =
           NumberUtil.getMaxDecimalLength(t.open, t.close, t.high, t.low);
     }
+
+    double priceSpacerWidth = getPriceSpacerWidth();
+
     mMainRenderer = MainRenderer(
       mMainRect,
       mMainMaxValue,
       mMainMinValue,
       mTopPadding,
+      priceSpacerWidth,
       mainState,
       isLine,
       fixedLength,
@@ -94,19 +101,29 @@ class ChartPainter extends BaseChartPainter {
       maDayList,
     );
     if (mVolRect != null) {
-      mVolRenderer = VolRenderer(mVolRect!, mVolMaxValue, mVolMinValue,
-          mChildPadding, fixedLength, this.chartStyle, this.chartColors);
+      mVolRenderer = VolRenderer(
+        mVolRect!,
+        mVolMaxValue,
+        mVolMinValue,
+        mChildPadding,
+        fixedLength,
+        priceSpacerWidth,
+        this.chartStyle,
+        this.chartColors,
+      );
     }
     if (mSecondaryRect != null) {
       mSecondaryRenderer = SecondaryRenderer(
-          mSecondaryRect!,
-          mSecondaryMaxValue,
-          mSecondaryMinValue,
-          mChildPadding,
-          secondaryState,
-          fixedLength,
-          chartStyle,
-          chartColors);
+        mSecondaryRect!,
+        mSecondaryMaxValue,
+        mSecondaryMinValue,
+        mChildPadding,
+        fixedLength,
+        priceSpacerWidth,
+        secondaryState,
+        chartStyle,
+        chartColors,
+      );
     }
   }
 
@@ -154,7 +171,10 @@ class ChartPainter extends BaseChartPainter {
   @override
   void drawChart(Canvas canvas, Size size) {
     canvas.save();
-    canvas.translate(mTranslateX * scaleX, 0.0);
+    double shift = chartStyle.alignPriceRight
+        ? mTranslateX - getPriceSpacerWidth()
+        : mTranslateX + getPriceSpacerWidth();
+    canvas.translate(shift * scaleX, 0.0);
     canvas.scale(scaleX, 1.0);
     for (int i = mStartIndex; datas != null && i <= mStopIndex; i++) {
       KLineEntity? curPoint = datas?[i];
@@ -360,23 +380,34 @@ class ChartPainter extends BaseChartPainter {
     //先画横线
     double startX = 0;
     final max = -mTranslateX + mWidth / scaleX;
-    final space =
-        this.chartStyle.nowPriceLineSpan + this.chartStyle.nowPriceLineLength;
+    final space = this.chartStyle.nowPriceLineSpan +
+        this.chartStyle.nowPriceLineThickness;
     while (startX < max) {
       canvas.drawLine(
-          Offset(startX, y),
-          Offset(startX + this.chartStyle.nowPriceLineLength, y),
-          nowPricePaint);
+        Offset(startX, y),
+        Offset(startX + this.chartStyle.nowPriceLineThickness, y),
+        nowPricePaint,
+      );
       startX += space;
     }
     //再画背景和文本
     TextPainter tp = getTextPainter(
-        value.toStringAsFixed(fixedLength), this.chartColors.nowPriceTextColor);
+      value.toStringAsFixed(fixedLength),
+      this.chartColors.nowPriceTextColor,
+    );
     double left = chartStyle.alignPriceRight ? mWidth - tp.width : 0;
     double top = y - tp.height / 2;
-    canvas.drawRect(Rect.fromLTRB(left, top, left + tp.width, top + tp.height),
+    double shift =
+        chartStyle.enablePriceSpacer ? chartStyle.priceLabelPadding * 2 : 0;
+    canvas.drawRect(
+        Rect.fromLTRB(
+          left - shift,
+          top,
+          left + tp.width + shift,
+          top + tp.height,
+        ),
         nowPricePaint);
-    tp.paint(canvas, Offset(left, top));
+    tp.paint(canvas, Offset(left - shift / 2, top));
   }
 
   ///画交叉线
@@ -411,16 +442,6 @@ class ChartPainter extends BaseChartPainter {
               center: Offset(x, y), height: 2.0, width: 2.0 / scaleX),
           paintX);
     }
-  }
-
-  TextPainter getTextPainter(text, color) {
-    if (color == null) {
-      color = this.chartColors.defaultTextColor;
-    }
-    TextSpan span = TextSpan(text: "$text", style: getTextStyle(color));
-    TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
-    tp.layout();
-    return tp;
   }
 
   String getDate(int? date) => dateFormat(

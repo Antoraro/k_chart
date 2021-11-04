@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart'
     show Color, TextStyle, Rect, Canvas, Size, CustomPainter;
+import 'package:flutter/painting.dart';
 import 'package:k_chart/utils/date_format_util.dart';
 
-import '../chart_style.dart' show ChartStyle;
+import '../chart_style.dart' show ChartColors, ChartStyle;
 import '../entity/k_line_entity.dart';
 import '../k_chart_widget.dart';
 
@@ -27,7 +28,10 @@ abstract class BaseChartPainter extends CustomPainter {
   late Rect mMainRect;
   Rect? mVolRect, mSecondaryRect;
   late double mDisplayHeight, mWidth;
-  double mTopPadding = 30.0, mBottomPadding = 20.0, mChildPadding = 12.0;
+  double mTopPadding = 30.0,
+      mBottomPadding = 20.0,
+      mChildPadding = 12.0,
+      mPriceSpacerWidth = 0.0;
   int mGridRows = 4, mGridColumns = 4;
   int mStartIndex = 0, mStopIndex = 0;
   double mMainMaxValue = double.minPositive, mMainMinValue = double.maxFinite;
@@ -41,11 +45,13 @@ abstract class BaseChartPainter extends CustomPainter {
   int mItemCount = 0;
   double mDataLen = 0.0; //数据占屏幕总长度
   final ChartStyle chartStyle;
+  final ChartColors chartColors;
   late double mPointWidth;
   List<String> mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn]; //格式化时间
 
   BaseChartPainter(
-    this.chartStyle, {
+    this.chartStyle,
+    this.chartColors, {
     this.datas,
     required this.scaleX,
     required this.scrollX,
@@ -353,6 +359,29 @@ abstract class BaseChartPainter extends CustomPainter {
 
   TextStyle getTextStyle(Color color) {
     return TextStyle(fontSize: 10.0, color: color);
+  }
+
+  TextPainter getTextPainter(text, [Color? color]) {
+    if (color == null) {
+      color = this.chartColors.defaultTextColor;
+    }
+    TextSpan span = TextSpan(text: "$text", style: getTextStyle(color));
+    TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+    tp.layout();
+    return tp;
+  }
+
+  /// Method that updates [mPriceSpacerWidth] param
+  /// with maxPrice text [TextPainter.width]
+  double getPriceSpacerWidth() {
+    if (!chartStyle.enablePriceSpacer) return 0.0;
+
+    if (mPriceSpacerWidth == 0.0) {
+      TextPainter tp = getTextPainter("${mMainMaxValue.toStringAsFixed(2)}");
+      tp.layout();
+      mPriceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
+    }
+    return mPriceSpacerWidth;
   }
 
   @override

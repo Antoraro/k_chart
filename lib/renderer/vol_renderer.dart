@@ -5,18 +5,32 @@ import 'package:k_chart/flutter_k_chart.dart';
 
 class VolRenderer extends BaseChartRenderer<VolumeEntity> {
   late double mVolWidth;
+  final double priceSpacerWidth;
   final ChartStyle chartStyle;
   final ChartColors chartColors;
 
-  VolRenderer(Rect mainRect, double maxValue, double minValue,
-      double topPadding, int fixedLength, this.chartStyle, this.chartColors)
-      : super(
-            chartRect: mainRect,
-            maxValue: maxValue,
-            minValue: minValue,
-            topPadding: topPadding,
-            fixedLength: fixedLength,
-            gridColor: chartColors.gridColor,) {
+  VolRenderer(
+    Rect mainRect,
+    double maxValue,
+    double minValue,
+    double topPadding,
+    int fixedLength,
+    this.priceSpacerWidth,
+    this.chartStyle,
+    this.chartColors,
+  ) : super(
+          chartRect: Rect.fromLTWH(
+            mainRect.left,
+            mainRect.top,
+            mainRect.width - priceSpacerWidth,
+            mainRect.height,
+          ),
+          maxValue: maxValue,
+          minValue: minValue,
+          topPadding: topPadding,
+          fixedLength: fixedLength,
+          gridColor: chartColors.gridColor,
+        ) {
     mVolWidth = this.chartStyle.volWidth;
   }
 
@@ -77,8 +91,16 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
         TextSpan(text: "${NumberUtil.format(maxValue)}", style: textStyle);
     TextPainter tp = TextPainter(text: span, textDirection: TextDirection.ltr);
     tp.layout();
+
+    final shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+
     tp.paint(
-        canvas, Offset(chartRect.width - tp.width, chartRect.top - topPadding));
+      canvas,
+      Offset(
+        chartRect.width - tp.width + shift,
+        chartRect.top - topPadding,
+      ),
+    );
   }
 
   @override

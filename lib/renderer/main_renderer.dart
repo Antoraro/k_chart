@@ -16,6 +16,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
   final ChartStyle chartStyle;
   final ChartColors chartColors;
   final double mLineStrokeWidth = 1.0;
+  double priceSpacerWidth = 0;
   double scaleX;
   late Paint mLinePaint;
 
@@ -24,6 +25,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       double maxValue,
       double minValue,
       double topPadding,
+      this.priceSpacerWidth,
       this.state,
       this.isLine,
       int fixedLength,
@@ -35,7 +37,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
             chartRect: Rect.fromLTWH(
               mainRect.left,
               mainRect.top,
-              mainRect.width,
+              mainRect.width - priceSpacerWidth,
               mainRect.height,
             ),
             maxValue: maxValue,
@@ -242,13 +244,27 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       TextPainter tp =
           TextPainter(text: span, textDirection: TextDirection.ltr);
       tp.layout();
+
+      double shiftX = chartStyle.enablePriceSpacer
+          ? chartStyle.priceLabelPadding
+          : -tp.width;
+      double shiftY = chartStyle.enablePriceSpacer ? tp.height / 2 : tp.height;
+
       double offsetX =
-          chartStyle.alignPriceRight ? chartRect.width - tp.width : 0;
+          chartStyle.alignPriceRight ? chartRect.width + shiftX : 0;
+
       if (i == 0) {
-        tp.paint(canvas, Offset(offsetX, topPadding));
+        tp.paint(canvas, Offset(offsetX, topPadding - shiftY));
+      } else if (i == gridRows) {
+        tp.paint(
+          canvas,
+          Offset(offsetX, rowSpace * i + topPadding - tp.height),
+        );
       } else {
         tp.paint(
-            canvas, Offset(offsetX, rowSpace * i - tp.height + topPadding));
+          canvas,
+          Offset(offsetX, rowSpace * i + topPadding - shiftY),
+        );
       }
     }
   }

@@ -9,6 +9,7 @@ import 'base_chart_renderer.dart';
 class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
   late double mMACDWidth;
   SecondaryState state;
+  final double priceSpacerWidth;
   final ChartStyle chartStyle;
   final ChartColors chartColors;
 
@@ -17,17 +18,24 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
       double maxValue,
       double minValue,
       double topPadding,
-      this.state,
       int fixedLength,
+      this.priceSpacerWidth,
+      this.state,
       this.chartStyle,
       this.chartColors)
       : super(
-            chartRect: mainRect,
-            maxValue: maxValue,
-            minValue: minValue,
-            topPadding: topPadding,
-            fixedLength: fixedLength,
-            gridColor: chartColors.gridColor,) {
+          chartRect: Rect.fromLTWH(
+            mainRect.left,
+            mainRect.top,
+            mainRect.width - priceSpacerWidth,
+            mainRect.height,
+          ),
+          maxValue: maxValue,
+          minValue: minValue,
+          topPadding: topPadding,
+          fixedLength: fixedLength,
+          gridColor: chartColors.gridColor,
+        ) {
     mMACDWidth = this.chartStyle.macdWidth;
   }
 
@@ -170,10 +178,22 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
         textDirection: TextDirection.ltr);
     minTp.layout();
 
-    maxTp.paint(canvas,
-        Offset(chartRect.width - maxTp.width, chartRect.top - topPadding));
-    minTp.paint(canvas,
-        Offset(chartRect.width - minTp.width, chartRect.bottom - minTp.height));
+    final shift = chartStyle.enablePriceSpacer ? priceSpacerWidth : 0.0;
+
+    maxTp.paint(
+      canvas,
+      Offset(
+        chartRect.width - maxTp.width + shift,
+        chartRect.top - topPadding,
+      ),
+    );
+    minTp.paint(
+      canvas,
+      Offset(
+        chartRect.width - minTp.width + shift,
+        chartRect.bottom - minTp.height,
+      ),
+    );
   }
 
   @override
