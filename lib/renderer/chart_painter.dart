@@ -293,7 +293,18 @@ class ChartPainter extends BaseChartPainter {
   void drawDate(Canvas canvas, Size size) {
     if (datas == null) return;
 
-    double columnSpace = size.width / mGridColumns;
+    double spacerWidth = getPriceSpacerWidth();
+
+    double leftX = chartStyle.enablePriceSpacer && !chartStyle.alignPriceRight
+        ? spacerWidth
+        : 0.0;
+    double rightX = chartStyle.enablePriceSpacer && chartStyle.alignPriceRight
+        ? size.width - spacerWidth
+        : size.width;
+
+    double width = rightX - leftX;
+
+    double columnSpace = width / mGridColumns;
     double startX = getX(mStartIndex) - mPointWidth / 2;
     double stopX = getX(mStopIndex) + mPointWidth / 2;
     double x = 0.0;
@@ -307,10 +318,10 @@ class ChartPainter extends BaseChartPainter {
         if (datas?[index] == null) continue;
         TextPainter tp = getTextPainter(getDate(datas![index].time), null);
         y = size.height - (mBottomPadding - tp.height) / 2 - tp.height;
-        x = columnSpace * i - tp.width / 2;
+        x = columnSpace * i - tp.width / 2 + leftX;
         // Prevent date text out of canvas
-        if (x < 0) x = 0;
-        if (x > size.width - tp.width) x = size.width - tp.width;
+        if (x < leftX) x = leftX;
+        if (x > rightX - tp.width) x = rightX - tp.width;
         tp.paint(canvas, Offset(x, y));
       }
     }
