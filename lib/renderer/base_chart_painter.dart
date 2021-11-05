@@ -207,6 +207,15 @@ abstract class BaseChartPainter extends CustomPainter {
       getVolMaxMinValue(item);
       getSecondaryMaxMinValue(item);
     }
+
+    // additionally update maxScroll param
+    // when max value is obtained
+    if (chartStyle.enablePriceSpacer) {
+      double priceSpacer = getPriceSpacerWidth();
+      double scrollShift = chartStyle.alignPriceRight ? priceSpacer : 0;
+
+      maxScrollX = getMinTranslateX().abs() + scrollShift;
+    }
   }
 
   void getMainMaxMinValue(KLineEntity item, int i) {
@@ -296,7 +305,16 @@ abstract class BaseChartPainter extends CustomPainter {
     }
   }
 
-  double xToTranslateX(double x) => -mTranslateX + x / scaleX;
+  double xToTranslateX(double x) {
+    double result = -mTranslateX + x;
+    if (chartStyle.enablePriceSpacer) {
+      double priceSpacer = getPriceSpacerWidth();
+      result = chartStyle.alignPriceRight
+          ? result + priceSpacer
+          : result - priceSpacer;
+    }
+    return result / scaleX;
+  }
 
   int indexOfTranslateX(double translateX) =>
       _indexOfTranslateX(translateX, 0, mItemCount - 1);
@@ -383,11 +401,11 @@ abstract class BaseChartPainter extends CustomPainter {
   double getPriceSpacerWidth() {
     if (!chartStyle.enablePriceSpacer) return 0.0;
 
-    if (mPriceSpacerWidth == 0.0) {
-      TextPainter tp = getTextPainter("${mMainMaxValue.toStringAsFixed(2)}");
-      tp.layout();
-      mPriceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
-    }
+    // if (mPriceSpacerWidth == 0.0 && mMainMaxValue != double.minPositive) {
+    TextPainter tp = getTextPainter("${mMainMaxValue.toStringAsFixed(2)}");
+    tp.layout();
+    mPriceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
+    // }
     return mPriceSpacerWidth;
   }
 
