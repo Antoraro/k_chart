@@ -61,6 +61,7 @@ class ChartPainter extends BaseChartPainter {
           volHidden: volHidden,
           secondaryState: secondaryState,
           isLine: isLine,
+          fixedLength: fixedLength,
         ) {
     selectPointPaint = Paint()
       ..isAntiAlias = true

@@ -32,6 +32,7 @@ abstract class BaseChartPainter extends CustomPainter {
       mBottomPadding = 20.0,
       mChildPadding = 12.0,
       mPriceSpacerWidth = 0.0;
+  int fixedLength;
   int mGridRows = 4, mGridColumns = 4;
   int mStartIndex = 0, mStopIndex = 0;
   double mMainMaxValue = double.minPositive, mMainMinValue = double.maxFinite;
@@ -61,6 +62,7 @@ abstract class BaseChartPainter extends CustomPainter {
     this.volHidden = false,
     this.secondaryState = SecondaryState.MACD,
     this.isLine = false,
+    this.fixedLength = 2,
   }) {
     mItemCount = datas?.length ?? 0;
     mPointWidth = this.chartStyle.pointWidth;
@@ -402,7 +404,7 @@ abstract class BaseChartPainter extends CustomPainter {
     if (!chartStyle.enablePriceSpacer) return 0.0;
 
     // if (mPriceSpacerWidth == 0.0 && mMainMaxValue != double.minPositive) {
-    TextPainter tp = getTextPainter("${mMainMaxValue.toStringAsFixed(2)}");
+    TextPainter tp = getTextPainter("${format(mMainMaxValue)}");
     tp.layout();
     mPriceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
     // }
@@ -416,6 +418,14 @@ abstract class BaseChartPainter extends CustomPainter {
       oldRect.width - mPriceSpacerWidth,
       oldRect.height,
     );
+  }
+
+  String format(double? n) {
+    if (n == null || n.isNaN) {
+      return "0.00";
+    } else {
+      return n.toStringAsFixed(fixedLength);
+    }
   }
 
   @override
