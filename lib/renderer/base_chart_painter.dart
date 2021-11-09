@@ -298,7 +298,7 @@ abstract class BaseChartPainter extends CustomPainter {
     }
   }
 
-  double xToTranslateX(double x) => (-mTranslateX + x) / scaleX;
+  double xToTranslateX(double x) => -mTranslateX + x / scaleX;
 
   int indexOfTranslateX(double translateX) =>
       _indexOfTranslateX(translateX, 0, mItemCount - 1);
@@ -402,7 +402,7 @@ abstract class BaseChartPainter extends CustomPainter {
     return Rect.fromLTWH(
       oldRect.left + (chartStyle.alignPriceRight ? 0.0 : _priceSpacerWidth),
       oldRect.top,
-      oldRect.width - getPriceSpacerWidth(),
+      oldRect.width - _priceSpacerWidth,
       oldRect.height,
     );
   }
