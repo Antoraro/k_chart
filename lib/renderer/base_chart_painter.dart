@@ -31,7 +31,7 @@ abstract class BaseChartPainter extends CustomPainter {
   double mTopPadding = 30.0,
       mBottomPadding = 20.0,
       mChildPadding = 12.0,
-      mPriceSpacerWidth = 0.0;
+      _priceSpacerWidth = 0.0;
   int fixedLength;
   int mGridRows = 4, mGridColumns = 4;
   int mStartIndex = 0, mStopIndex = 0;
@@ -209,15 +209,6 @@ abstract class BaseChartPainter extends CustomPainter {
       getVolMaxMinValue(item);
       getSecondaryMaxMinValue(item);
     }
-
-    // additionally update maxScroll param
-    // when max value is obtained
-    if (chartStyle.enablePriceSpacer) {
-      double priceSpacer = getPriceSpacerWidth();
-      double scrollShift = chartStyle.alignPriceRight ? priceSpacer : 0;
-
-      maxScrollX = getMinTranslateX().abs() + scrollShift;
-    }
   }
 
   void getMainMaxMinValue(KLineEntity item, int i) {
@@ -307,16 +298,7 @@ abstract class BaseChartPainter extends CustomPainter {
     }
   }
 
-  double xToTranslateX(double x) {
-    double result = -mTranslateX + x;
-    if (chartStyle.enablePriceSpacer) {
-      double priceSpacer = getPriceSpacerWidth();
-      result = chartStyle.alignPriceRight
-          ? result + priceSpacer
-          : result - priceSpacer;
-    }
-    return result / scaleX;
-  }
+  double xToTranslateX(double x) => (-mTranslateX + x) / scaleX;
 
   int indexOfTranslateX(double translateX) =>
       _indexOfTranslateX(translateX, 0, mItemCount - 1);
@@ -347,7 +329,12 @@ abstract class BaseChartPainter extends CustomPainter {
   ///根据索引索取x坐标
   ///+ mPointWidth / 2防止第一根和最后一根k线显示不���
   ///@param position 索引值
-  double getX(int position) => position * mPointWidth + mPointWidth / 2;
+  double getX(int position) {
+    double shift = chartStyle.enablePriceSpacer && chartStyle.alignPriceRight
+        ? -getPriceSpacerWidth()
+        : 0;
+    return position * mPointWidth + mPointWidth / 2 + shift;
+  }
 
   KLineEntity getItem(int position) {
     return datas![position];
@@ -398,7 +385,7 @@ abstract class BaseChartPainter extends CustomPainter {
     return tp;
   }
 
-  /// Method that updates [mPriceSpacerWidth] param
+  /// Method that updates [_priceSpacerWidth] param
   /// with maxPrice text [TextPainter.width]
   double getPriceSpacerWidth() {
     if (!chartStyle.enablePriceSpacer) return 0.0;
@@ -406,16 +393,16 @@ abstract class BaseChartPainter extends CustomPainter {
     // if (mPriceSpacerWidth == 0.0 && mMainMaxValue != double.minPositive) {
     TextPainter tp = getTextPainter("${format(mMainMaxValue)}");
     tp.layout();
-    mPriceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
+    _priceSpacerWidth = tp.width + chartStyle.priceLabelPadding * 2;
     // }
-    return mPriceSpacerWidth;
+    return _priceSpacerWidth;
   }
 
   Rect getShiftedRect(Rect oldRect) {
     return Rect.fromLTWH(
-      oldRect.left + (chartStyle.alignPriceRight ? 0.0 : mPriceSpacerWidth),
+      oldRect.left + (chartStyle.alignPriceRight ? 0.0 : _priceSpacerWidth),
       oldRect.top,
-      oldRect.width - mPriceSpacerWidth,
+      oldRect.width - getPriceSpacerWidth(),
       oldRect.height,
     );
   }
