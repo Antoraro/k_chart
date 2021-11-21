@@ -223,8 +223,8 @@ abstract class BaseChartPainter extends CustomPainter {
       maxPrice = item.high;
       minPrice = item.low;
     }
-    mMainMaxValue = max(mMainMaxValue, maxPrice);
-    mMainMinValue = min(mMainMinValue, minPrice);
+    mMainMaxValue = _getMax(mMainMaxValue, maxPrice);
+    mMainMinValue = _getMin(mMainMinValue, minPrice);
 
     if (mMainHighMaxValue < item.high) {
       mMainHighMaxValue = item.high;
@@ -236,9 +236,17 @@ abstract class BaseChartPainter extends CustomPainter {
     }
 
     if (isLine == true) {
-      mMainMaxValue = max(mMainMaxValue, item.close);
-      mMainMinValue = min(mMainMinValue, item.close);
+      mMainMaxValue = _getMax(mMainMaxValue, item.close);
+      mMainMinValue = _getMin(mMainMinValue, item.close);
     }
+  }
+
+  double _getMax(double m1, double m2) {
+    return m1 == double.minPositive ? m2 : max(mMainMaxValue, m2);
+  }
+
+  double _getMin(double m1, double m2) {
+    return m1 == double.maxFinite ? m2 : min(mMainMinValue, m2);
   }
 
   double _findMaxMA(List<double> a) {
@@ -258,39 +266,42 @@ abstract class BaseChartPainter extends CustomPainter {
   }
 
   void getVolMaxMinValue(KLineEntity item) {
-    mVolMaxValue = max(mVolMaxValue,
-        max(item.vol, max(item.MA5Volume ?? 0, item.MA10Volume ?? 0)));
-    mVolMinValue = min(mVolMinValue,
-        min(item.vol, min(item.MA5Volume ?? 0, item.MA10Volume ?? 0)));
+    final maxItemVol =
+        max(item.vol, max(item.MA5Volume ?? 0, item.MA10Volume ?? 0));
+    mVolMaxValue = _getMax(mVolMaxValue, maxItemVol);
+
+    final minItemVol =
+        min(item.vol, min(item.MA5Volume ?? 0, item.MA10Volume ?? 0));
+    mVolMinValue = _getMin(mVolMinValue, minItemVol);
   }
 
   void getSecondaryMaxMinValue(KLineEntity item) {
     if (secondaryState == SecondaryState.MACD) {
       if (item.macd != null) {
-        mSecondaryMaxValue =
-            max(mSecondaryMaxValue, max(item.macd!, max(item.dif!, item.dea!)));
-        mSecondaryMinValue =
-            min(mSecondaryMinValue, min(item.macd!, min(item.dif!, item.dea!)));
+        mSecondaryMaxValue = _getMax(
+            mSecondaryMaxValue, max(item.macd!, max(item.dif!, item.dea!)));
+        mSecondaryMinValue = _getMin(
+            mSecondaryMinValue, min(item.macd!, min(item.dif!, item.dea!)));
       }
     } else if (secondaryState == SecondaryState.KDJ) {
       if (item.d != null) {
         mSecondaryMaxValue =
-            max(mSecondaryMaxValue, max(item.k!, max(item.d!, item.j!)));
+            _getMax(mSecondaryMaxValue, max(item.k!, max(item.d!, item.j!)));
         mSecondaryMinValue =
-            min(mSecondaryMinValue, min(item.k!, min(item.d!, item.j!)));
+            _getMin(mSecondaryMinValue, min(item.k!, min(item.d!, item.j!)));
       }
     } else if (secondaryState == SecondaryState.RSI) {
       if (item.rsi != null) {
-        mSecondaryMaxValue = max(mSecondaryMaxValue, item.rsi!);
-        mSecondaryMinValue = min(mSecondaryMinValue, item.rsi!);
+        mSecondaryMaxValue = _getMax(mSecondaryMaxValue, item.rsi!);
+        mSecondaryMinValue = _getMin(mSecondaryMinValue, item.rsi!);
       }
     } else if (secondaryState == SecondaryState.WR) {
       mSecondaryMaxValue = 0;
       mSecondaryMinValue = -100;
     } else if (secondaryState == SecondaryState.CCI) {
       if (item.cci != null) {
-        mSecondaryMaxValue = max(mSecondaryMaxValue, item.cci!);
-        mSecondaryMinValue = min(mSecondaryMinValue, item.cci!);
+        mSecondaryMaxValue = _getMax(mSecondaryMaxValue, item.cci!);
+        mSecondaryMinValue = _getMin(mSecondaryMinValue, item.cci!);
       }
     } else {
       mSecondaryMaxValue = 0;
