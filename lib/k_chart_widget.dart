@@ -204,7 +204,13 @@ class _KChartWidgetState extends State<KChartWidget>
                 size: Size(double.infinity, double.infinity),
                 painter: _painter,
               ),
-              if (widget.showInfoDialog) _buildInfoDialog()
+              if (widget.showInfoDialog)
+                _InfoDialog(
+                  width: mWidth,
+                  infoWindowStream: mInfoWindowStream,
+                  isLongPress: isLongPress,
+                  widget: widget,
+                )
             ],
           ),
         );
@@ -264,81 +270,125 @@ class _KChartWidgetState extends State<KChartWidget>
   }
 
   void notifyChanged() => setState(() {});
+}
 
-  late List<String> infos;
+class _InfoDialog extends StatelessWidget {
+  const _InfoDialog({
+    Key? key,
+    required this.width,
+    required this.widget,
+    required this.isLongPress,
+    required this.infoWindowStream,
+  }) : super(key: key);
+  final double width;
+  final bool isLongPress;
+  final KChartWidget widget;
+  final StreamController<InfoWindowEntity?>? infoWindowStream;
 
-  Widget _buildInfoDialog() {
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder<InfoWindowEntity?>(
-        stream: mInfoWindowStream?.stream,
-        builder: (context, snapshot) {
-          if (!isLongPress ||
-              widget.isLine == true ||
-              !snapshot.hasData ||
-              snapshot.data?.kLineEntity == null) return Container();
-          KLineEntity entity = snapshot.data!.kLineEntity;
-          double upDown = entity.change ?? entity.close - entity.open;
-          double upDownPercent = entity.ratio ?? (upDown / entity.open) * 100;
-          infos = [
-            getDate(entity.time),
-            entity.open.toStringAsFixed(widget.fixedLength),
-            entity.high.toStringAsFixed(widget.fixedLength),
-            entity.low.toStringAsFixed(widget.fixedLength),
-            entity.close.toStringAsFixed(widget.fixedLength),
-            "${upDown > 0 ? "+" : ""}${upDown.toStringAsFixed(widget.fixedLength)}",
-            "${upDownPercent > 0 ? "+" : ''}${upDownPercent.toStringAsFixed(2)}%",
-            entity.amount.toInt().toString()
-          ];
-          return Container(
-            margin: EdgeInsets.only(
-                left: snapshot.data!.isLeft ? 4 : mWidth - mWidth / 3 - 4,
-                top: 25),
-            width: mWidth / 3,
-            decoration: BoxDecoration(
-                color: widget.chartColors.selectFillColor,
-                border: Border.all(
-                    color: widget.chartColors.selectBorderColor, width: 0.5)),
-            child: ListView.builder(
-              padding: EdgeInsets.all(4),
-              itemCount: infos.length,
-              itemExtent: 14.0,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                final translations = widget.isChinese
-                    ? kChartTranslations['zh_CN']!
-                    : widget.translations.of(context);
+      stream: infoWindowStream?.stream,
+      builder: (context, snapshot) {
+        if (!isLongPress ||
+            widget.isLine == true ||
+            !snapshot.hasData ||
+            snapshot.data?.kLineEntity == null) return Container();
+        KLineEntity entity = snapshot.data!.kLineEntity;
+        double upDown = entity.change ?? entity.close - entity.open;
+        double upDownPercent = entity.ratio ?? (upDown / entity.open) * 100;
+        final infos = [
+          getDate(entity.time),
+          entity.open.toStringAsFixed(widget.fixedLength),
+          entity.high.toStringAsFixed(widget.fixedLength),
+          entity.low.toStringAsFixed(widget.fixedLength),
+          entity.close.toStringAsFixed(widget.fixedLength),
+          "${upDown > 0 ? "+" : ""}${upDown.toStringAsFixed(widget.fixedLength)}",
+          "${upDownPercent > 0 ? "+" : ''}${upDownPercent.toStringAsFixed(2)}%",
+          entity.amount.toInt().toString()
+        ];
+        return Container(
+          margin: EdgeInsets.only(
+              left: snapshot.data!.isLeft ? 4 : width - width / 3 - 4, top: 25),
+          width: width / 3,
+          decoration: BoxDecoration(
+              color: widget.chartColors.selectFillColor,
+              border: Border.all(
+                  color: widget.chartColors.selectBorderColor, width: 0.5)),
+          child: ListView.builder(
+            padding: EdgeInsets.all(4),
+            itemCount: infos.length,
+            itemExtent: 14.0,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              final translations = widget.isChinese
+                  ? kChartTranslations['zh_CN']!
+                  : widget.translations.of(context);
 
-                return _buildItem(
-                  infos[index],
-                  translations.byIndex(index),
-                );
-              },
-            ),
-          );
-        });
+              return _InfoItem(
+                info: infos[index],
+                infoName: translations.byIndex(index),
+                infoColor: getInfoColor(infos[index]),
+                infoNameColor: widget.chartColors.infoWindowTitleColor,
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
-  Widget _buildItem(String info, String infoName) {
+  String getDate(int? date) => dateFormat(
+        DateTime.fromMillisecondsSinceEpoch(
+          date ?? DateTime.now().millisecondsSinceEpoch,
+        ),
+        widget.timeFormat,
+      );
+
+  Color getInfoColor(String info) {
     Color color = widget.chartColors.infoWindowNormalColor;
     if (info.startsWith("+"))
       color = widget.chartColors.infoWindowUpColor;
     else if (info.startsWith("-")) color = widget.chartColors.infoWindowDnColor;
 
+    return color;
+  }
+}
+
+class _InfoItem extends StatelessWidget {
+  const _InfoItem({
+    Key? key,
+    required this.info,
+    required this.infoName,
+    required this.infoColor,
+    required this.infoNameColor,
+  }) : super(key: key);
+  final String info, infoName;
+  final Color infoColor, infoNameColor;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Expanded(
-            child: Text("$infoName",
-                style: TextStyle(
-                    color: widget.chartColors.infoWindowTitleColor,
-                    fontSize: 10.0))),
-        Text(info, style: TextStyle(color: color, fontSize: 10.0)),
+          child: Text(
+            "$infoName",
+            style: TextStyle(
+              color: infoNameColor,
+              fontSize: 10.0,
+            ),
+          ),
+        ),
+        Text(
+          info,
+          style: TextStyle(
+            color: infoColor,
+            fontSize: 10.0,
+          ),
+        ),
       ],
     );
   }
-
-  String getDate(int? date) => dateFormat(
-      DateTime.fromMillisecondsSinceEpoch(
-          date ?? DateTime.now().millisecondsSinceEpoch),
-      widget.timeFormat);
 }
