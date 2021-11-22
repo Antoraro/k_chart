@@ -32,7 +32,6 @@ abstract class BaseChartPainter extends CustomPainter {
       mBottomPadding = 20.0,
       mChildPadding = 12.0,
       _priceSpacerWidth = 0.0;
-  int fixedLength;
   int mGridRows = 4, mGridColumns = 4;
   int mStartIndex = 0, mStopIndex = 0;
   double mMainMaxValue = double.minPositive, mMainMinValue = double.maxFinite;
@@ -45,6 +44,7 @@ abstract class BaseChartPainter extends CustomPainter {
       mMainLowMinValue = double.maxFinite;
   int mItemCount = 0;
   double mDataLen = 0.0; //数据占屏幕总长度
+  final String Function(double) priceFormatter;
   final ChartStyle chartStyle;
   final ChartColors chartColors;
   late double mPointWidth;
@@ -53,6 +53,7 @@ abstract class BaseChartPainter extends CustomPainter {
   BaseChartPainter(
     this.chartStyle,
     this.chartColors, {
+    required this.priceFormatter,
     this.datas,
     required this.scaleX,
     required this.scrollX,
@@ -62,7 +63,6 @@ abstract class BaseChartPainter extends CustomPainter {
     this.volHidden = false,
     this.secondaryState = SecondaryState.MACD,
     this.isLine = false,
-    this.fixedLength = 2,
   }) {
     mItemCount = datas?.length ?? 0;
     mPointWidth = this.chartStyle.pointWidth;
@@ -76,10 +76,7 @@ abstract class BaseChartPainter extends CustomPainter {
   }
 
   void initFormats() {
-    if (this.chartStyle.dateTimeFormat != null) {
-      mFormats = this.chartStyle.dateTimeFormat!;
-      return;
-    }
+    mFormats = this.chartStyle.timeFormat;
 
     if (mItemCount < 2) {
       mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn];
@@ -278,30 +275,30 @@ abstract class BaseChartPainter extends CustomPainter {
   void getSecondaryMaxMinValue(KLineEntity item) {
     if (secondaryState == SecondaryState.MACD) {
       if (item.macd != null) {
-        mSecondaryMaxValue = _getMax(
-            mSecondaryMaxValue, max(item.macd!, max(item.dif!, item.dea!)));
-        mSecondaryMinValue = _getMin(
-            mSecondaryMinValue, min(item.macd!, min(item.dif!, item.dea!)));
+        mSecondaryMaxValue =
+            max(mSecondaryMaxValue, max(item.macd!, max(item.dif!, item.dea!)));
+        mSecondaryMinValue =
+            min(mSecondaryMinValue, min(item.macd!, min(item.dif!, item.dea!)));
       }
     } else if (secondaryState == SecondaryState.KDJ) {
       if (item.d != null) {
         mSecondaryMaxValue =
-            _getMax(mSecondaryMaxValue, max(item.k!, max(item.d!, item.j!)));
+            max(mSecondaryMaxValue, max(item.k!, max(item.d!, item.j!)));
         mSecondaryMinValue =
-            _getMin(mSecondaryMinValue, min(item.k!, min(item.d!, item.j!)));
+            min(mSecondaryMinValue, min(item.k!, min(item.d!, item.j!)));
       }
     } else if (secondaryState == SecondaryState.RSI) {
       if (item.rsi != null) {
-        mSecondaryMaxValue = _getMax(mSecondaryMaxValue, item.rsi!);
-        mSecondaryMinValue = _getMin(mSecondaryMinValue, item.rsi!);
+        mSecondaryMaxValue = max(mSecondaryMaxValue, item.rsi!);
+        mSecondaryMinValue = min(mSecondaryMinValue, item.rsi!);
       }
     } else if (secondaryState == SecondaryState.WR) {
       mSecondaryMaxValue = 0;
       mSecondaryMinValue = -100;
     } else if (secondaryState == SecondaryState.CCI) {
       if (item.cci != null) {
-        mSecondaryMaxValue = _getMax(mSecondaryMaxValue, item.cci!);
-        mSecondaryMinValue = _getMin(mSecondaryMinValue, item.cci!);
+        mSecondaryMaxValue = max(mSecondaryMaxValue, item.cci!);
+        mSecondaryMinValue = min(mSecondaryMinValue, item.cci!);
       }
     } else {
       mSecondaryMaxValue = 0;
@@ -419,11 +416,8 @@ abstract class BaseChartPainter extends CustomPainter {
   }
 
   String format(double? n) {
-    if (n == null || n.isNaN) {
-      return "0.00";
-    } else {
-      return n.toStringAsFixed(fixedLength);
-    }
+    if (n == null || n.isNaN) n = 0.0;
+    return priceFormatter.call(n);
   }
 
   @override

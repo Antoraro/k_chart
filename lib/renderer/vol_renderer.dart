@@ -8,14 +8,15 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
   final double priceSpacerWidth;
   final ChartStyle chartStyle;
   final ChartColors chartColors;
+  final String Function(double) priceFormatter;
 
   VolRenderer(
     Rect chartRect,
     double maxValue,
     double minValue,
     double topPadding,
-    int fixedLength,
     this.priceSpacerWidth,
+    this.priceFormatter,
     this.chartStyle,
     this.chartColors,
   ) : super(
@@ -23,8 +24,8 @@ class VolRenderer extends BaseChartRenderer<VolumeEntity> {
           maxValue: maxValue,
           minValue: minValue,
           topPadding: topPadding,
-          fixedLength: fixedLength,
           gridColor: chartColors.gridColor,
+          priceFormatter: priceFormatter,
         ) {
     mVolWidth = this.chartStyle.volWidth;
   }

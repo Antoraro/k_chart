@@ -10,6 +10,8 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
   MainState state;
   bool isLine;
 
+  final String Function(double) priceFormatter;
+
   //绘制的内容区域
   late Rect _contentRect;
   List<int> maDayList;
@@ -28,7 +30,7 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
       this.priceSpacerWidth,
       this.state,
       this.isLine,
-      int fixedLength,
+      this.priceFormatter,
       this.chartStyle,
       this.chartColors,
       this.scaleX,
@@ -38,8 +40,8 @@ class MainRenderer extends BaseChartRenderer<CandleEntity> {
           maxValue: maxValue,
           minValue: minValue,
           topPadding: topPadding,
-          fixedLength: fixedLength,
           gridColor: chartColors.gridColor,
+          priceFormatter: priceFormatter,
         ) {
     mCandleWidth = this.chartStyle.candleWidth;
     mCandleLineWidth = this.chartStyle.candleLineWidth;

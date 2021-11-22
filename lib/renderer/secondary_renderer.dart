@@ -12,13 +12,14 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
   final double priceSpacerWidth;
   final ChartStyle chartStyle;
   final ChartColors chartColors;
+  final String Function(double) priceFormatter;
 
   SecondaryRenderer(
       Rect chartRect,
       double maxValue,
       double minValue,
       double topPadding,
-      int fixedLength,
+      this.priceFormatter,
       this.priceSpacerWidth,
       this.state,
       this.chartStyle,
@@ -28,8 +29,8 @@ class SecondaryRenderer extends BaseChartRenderer<MACDEntity> {
           maxValue: maxValue,
           minValue: minValue,
           topPadding: topPadding,
-          fixedLength: fixedLength,
           gridColor: chartColors.gridColor,
+          priceFormatter: priceFormatter,
         ) {
     mMACDWidth = this.chartStyle.macdWidth;
   }

@@ -29,6 +29,7 @@ class KChartWidget extends StatefulWidget {
   final bool volHidden;
   final SecondaryState secondaryState;
   final Function()? onSecondaryTap;
+  final String Function(double) priceFormatter;
   final bool isLine;
   final bool hideGrid;
   @Deprecated('Use `translations` instead.')
@@ -66,16 +67,20 @@ class KChartWidget extends StatefulWidget {
     this.showNowPrice = true,
     this.showInfoDialog = true,
     this.translations = kChartTranslations,
-    this.timeFormat = TimeFormat.YEAR_MONTH_DAY,
+    @Deprecated('Use ChartStyle.timeFormat instead.')
+        this.timeFormat = TimeFormat.YEAR_MONTH_DAY,
     this.onLoadMore,
+    this.priceFormatter = defaultPriceFormatter,
     @Deprecated('Use `chartColors` instead.') this.bgColor,
-    this.fixedLength = 2,
+    @Deprecated('Use priceFormatter() instead.') this.fixedLength = 2,
     this.maDayList = const [5, 10, 20],
     this.flingTime = 600,
     this.flingRatio = 0.5,
     this.flingCurve = Curves.decelerate,
     this.isOnDrag,
   });
+
+  static String defaultPriceFormatter(double value) => value.toStringAsFixed(2);
 
   @override
   _KChartWidgetState createState() => _KChartWidgetState();
@@ -123,6 +128,7 @@ class _KChartWidgetState extends State<KChartWidget>
     final _painter = ChartPainter(
       widget.chartStyle,
       widget.chartColors,
+      priceFormatter: widget.priceFormatter,
       datas: widget.datas,
       scaleX: mScaleX,
       scrollX: mScrollX,
@@ -136,7 +142,6 @@ class _KChartWidgetState extends State<KChartWidget>
       showNowPrice: widget.showNowPrice,
       sink: mInfoWindowStream?.sink,
       bgColor: widget.bgColor,
-      fixedLength: widget.fixedLength,
       maDayList: widget.maDayList,
     );
 
@@ -297,14 +302,14 @@ class _InfoDialog extends StatelessWidget {
         KLineEntity entity = snapshot.data!.kLineEntity;
         double upDown = entity.change ?? entity.close - entity.open;
         double upDownPercent = entity.ratio ?? (upDown / entity.open) * 100;
-        final infos = [
+        final List<String> infoList = [
           getDate(entity.time),
-          entity.open.toStringAsFixed(widget.fixedLength),
-          entity.high.toStringAsFixed(widget.fixedLength),
-          entity.low.toStringAsFixed(widget.fixedLength),
-          entity.close.toStringAsFixed(widget.fixedLength),
-          "${upDown > 0 ? "+" : ""}${upDown.toStringAsFixed(widget.fixedLength)}",
-          "${upDownPercent > 0 ? "+" : ''}${upDownPercent.toStringAsFixed(2)}%",
+          widget.priceFormatter.call(entity.open),
+          widget.priceFormatter.call(entity.high),
+          widget.priceFormatter.call(entity.low),
+          widget.priceFormatter.call(entity.close),
+          "${upDown > 0 ? "+" : ""}${widget.priceFormatter.call(upDown)}",
+          "${upDownPercent > 0 ? "+" : ''}${widget.priceFormatter.call(upDownPercent)}%",
           entity.amount.toInt().toString()
         ];
         return Container(
@@ -317,7 +322,7 @@ class _InfoDialog extends StatelessWidget {
                   color: widget.chartColors.selectBorderColor, width: 0.5)),
           child: ListView.builder(
             padding: EdgeInsets.all(4),
-            itemCount: infos.length,
+            itemCount: infoList.length,
             itemExtent: 14.0,
             shrinkWrap: true,
             itemBuilder: (context, index) {
@@ -326,9 +331,9 @@ class _InfoDialog extends StatelessWidget {
                   : widget.translations.of(context);
 
               return _InfoItem(
-                info: infos[index],
+                info: infoList[index],
                 infoName: translations.byIndex(index),
-                infoColor: getInfoColor(infos[index]),
+                infoColor: getInfoColor(infoList[index]),
                 infoNameColor: widget.chartColors.infoWindowTitleColor,
               );
             },
@@ -342,7 +347,7 @@ class _InfoDialog extends StatelessWidget {
         DateTime.fromMillisecondsSinceEpoch(
           date ?? DateTime.now().millisecondsSinceEpoch,
         ),
-        widget.timeFormat,
+        widget.chartStyle.timeFormat,
       );
 
   Color getInfoColor(String info) {

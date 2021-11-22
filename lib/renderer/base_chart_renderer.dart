@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 export '../chart_style.dart';
 
 abstract class BaseChartRenderer<T> {
+  final String Function(double) priceFormatter;
   double maxValue, minValue;
   late double scaleY;
   double topPadding;
   Rect chartRect;
-  int fixedLength;
   Paint chartPaint = Paint()
     ..isAntiAlias = true
     ..filterQuality = FilterQuality.high
@@ -20,11 +20,11 @@ abstract class BaseChartRenderer<T> {
     ..color = Color(0xff4c5c74);
 
   BaseChartRenderer({
+    required this.priceFormatter,
     required this.chartRect,
     required this.maxValue,
     required this.minValue,
     required this.topPadding,
-    required this.fixedLength,
     required Color gridColor,
   }) {
     if (maxValue == minValue) {
@@ -39,11 +39,8 @@ abstract class BaseChartRenderer<T> {
   double getY(double y) => (maxValue - y) * scaleY + chartRect.top;
 
   String format(double? n) {
-    if (n == null || n.isNaN) {
-      return "0.00";
-    } else {
-      return n.toStringAsFixed(fixedLength);
-    }
+    if (n == null || n.isNaN) n = 0.0;
+    return priceFormatter.call(n);
   }
 
   void drawGrid(Canvas canvas, int gridRows, int gridColumns);

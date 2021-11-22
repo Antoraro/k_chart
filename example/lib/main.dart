@@ -111,8 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
               mainState: _mainState,
               volHidden: _volHidden,
               secondaryState: _secondaryState,
-              fixedLength: 2,
-              timeFormat: TimeFormat.YEAR_MONTH_DAY,
               translations: kChartTranslations,
               showNowPrice: _showNowPrice,
               //`isChinese` is Deprecated, Use `translations` instead.
