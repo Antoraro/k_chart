@@ -347,7 +347,7 @@ class _InfoDialog extends StatelessWidget {
         DateTime.fromMillisecondsSinceEpoch(
           date ?? DateTime.now().millisecondsSinceEpoch,
         ),
-        widget.chartStyle.timeFormat,
+        [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn],
       );
 
   Color getInfoColor(String info) {
