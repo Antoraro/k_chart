@@ -380,7 +380,7 @@ abstract class BaseChartPainter extends CustomPainter {
       (translateX + mTranslateX) * scaleX;
 
   TextStyle getTextStyle(Color color) {
-    return TextStyle(fontSize: 10.0, color: color);
+    return TextStyle(fontSize: 12.0, color: color);
   }
 
   TextPainter getTextPainter(text, [Color? color]) {
