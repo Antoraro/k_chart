@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart' show Color;
-import 'package:k_chart/k_chart_widget.dart';
 
 class ChartColors {
   List<Color> bgColor = [Color(0xff18191d), Color(0xff18191d)];
@@ -114,5 +113,5 @@ class ChartStyle {
   int gridColumns = 4;
 
   //下方時間客製化
-  List<String> timeFormat = TimeFormat.YEAR_MONTH_DAY;
+  List<String>? timeFormat;
 }

@@ -76,26 +76,28 @@ abstract class BaseChartPainter extends CustomPainter {
   }
 
   void initFormats() {
-    mFormats = this.chartStyle.timeFormat;
+    if (this.chartStyle.timeFormat != null) {
+      mFormats = this.chartStyle.timeFormat!;
+    } else {
+      if (mItemCount < 2) {
+        mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn];
+        return;
+      }
 
-    if (mItemCount < 2) {
-      mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn];
-      return;
+      int firstTime = datas!.first.time ?? 0;
+      int secondTime = datas![1].time ?? 0;
+      int time = secondTime - firstTime;
+      time ~/= 1000;
+      //月线
+      if (time >= 24 * 60 * 60 * 28)
+        mFormats = [yy, '-', mm];
+      //日线等
+      else if (time >= 24 * 60 * 60)
+        mFormats = [yy, '-', mm, '-', dd];
+      //小时线等
+      else
+        mFormats = [mm, '-', dd, ' ', HH, ':', nn];
     }
-
-    int firstTime = datas!.first.time ?? 0;
-    int secondTime = datas![1].time ?? 0;
-    int time = secondTime - firstTime;
-    time ~/= 1000;
-    //月线
-    if (time >= 24 * 60 * 60 * 28)
-      mFormats = [yy, '-', mm];
-    //日线等
-    else if (time >= 24 * 60 * 60)
-      mFormats = [yy, '-', mm, '-', dd];
-    //小时线等
-    else
-      mFormats = [mm, '-', dd, ' ', HH, ':', nn];
   }
 
   @override
