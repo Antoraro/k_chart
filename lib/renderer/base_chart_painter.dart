@@ -362,8 +362,9 @@ abstract class BaseChartPainter extends CustomPainter {
   ///获取平移的最小值
   double getMinTranslateX() {
     var priceSpacerShift = chartStyle.alignPriceRight
-        ? -getPriceSpacerWidth()
-        : getPriceSpacerWidth();
+        ? -getPriceSpacerWidth() - chartStyle.priceLabelPadding * 2
+        : 0;
+
     var x =
         -mDataLen + mWidth / scaleX - mPointWidth / 2 + priceSpacerShift * 2;
 
