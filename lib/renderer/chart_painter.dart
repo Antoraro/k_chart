@@ -545,9 +545,11 @@ class ChartPainter extends BaseChartPainter {
   }
 
   String getDate(int? date) => dateFormat(
-      DateTime.fromMillisecondsSinceEpoch(
-          date ?? DateTime.now().millisecondsSinceEpoch),
-      mFormats);
+        DateTime.fromMillisecondsSinceEpoch(
+          date == null ? DateTime.now().millisecondsSinceEpoch : date * 1000,
+        ),
+        mFormats,
+      );
 
   double getMainY(double y) => mMainRenderer.getY(y);
 

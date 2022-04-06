@@ -345,7 +345,7 @@ class _InfoDialog extends StatelessWidget {
 
   String getDate(int? date) => dateFormat(
         DateTime.fromMillisecondsSinceEpoch(
-          date ?? DateTime.now().millisecondsSinceEpoch,
+          date == null ? DateTime.now().millisecondsSinceEpoch : date * 1000,
         ),
         [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn],
       );
