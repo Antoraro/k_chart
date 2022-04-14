@@ -529,7 +529,8 @@ class ChartPainter extends BaseChartPainter {
       ..strokeWidth = this.chartStyle.hCrossWidth
       ..isAntiAlias = true;
     // k线图横线
-    canvas.drawLine(Offset(0, y), Offset(mWidth / scaleX, y), paintX);
+    canvas.drawLine(Offset(0, y),
+        Offset(-getPriceSpacerWidth() + mWidth / scaleX, y), paintX);
     if (scaleX >= 1) {
       canvas.drawOval(
           Rect.fromCenter(
