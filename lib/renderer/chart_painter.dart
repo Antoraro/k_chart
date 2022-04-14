@@ -518,7 +518,7 @@ class ChartPainter extends BaseChartPainter {
       ..color = this.chartColors.vCrossColor
       ..strokeWidth = this.chartStyle.vCrossWidth
       ..isAntiAlias = true;
-    double x = getX(index);
+    double x = translateXtoX(getX(index));
     double y = getMainY(point.close);
     // k线图竖线
     canvas.drawLine(Offset(x, mTopPadding),
@@ -529,8 +529,7 @@ class ChartPainter extends BaseChartPainter {
       ..strokeWidth = this.chartStyle.hCrossWidth
       ..isAntiAlias = true;
     // k线图横线
-    canvas.drawLine(Offset(-mTranslateX, y),
-        Offset(-mTranslateX + mWidth / scaleX, y), paintX);
+    canvas.drawLine(Offset(0, y), Offset(mWidth / scaleX, y), paintX);
     if (scaleX >= 1) {
       canvas.drawOval(
           Rect.fromCenter(
